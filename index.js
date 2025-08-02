@@ -231,6 +231,22 @@ app.get('/form/:id', async (req, res) => {
   `);
 });
 
+app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Form Bot</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+      <h1>WhatsApp Form Bot</h1>
+      <p>Admin Bot QR: Scan with your admin number to create forms.</p>
+      <p>User forms are accessed via shared links (e.g., <code>/form/123</code>).</p>
+    </body>
+    </html>
+  `);
+});
+
 // Start
 app.listen(PORT, () => {
   adminBot.initialize();
