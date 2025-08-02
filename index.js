@@ -124,6 +124,14 @@ adminBot.on('message', async msg => {
 });
 
 // User Bot Events
+
+userBot.on('qr', qr => {
+  console.log("USER BOT QR - Scan for form filling:");
+  qrcode.generate(qr, { small: true });
+});
+
+userBot.on('ready', () => console.log('User Bot Ready!'));
+
 userBot.on('message', async msg => {
   const chatId = msg.from;
   const text = msg.body.trim();
