@@ -1,12 +1,12 @@
 {
   "name": "whatsapp-form-bot",
-  "version": "2.0.0",
-  "description": "Advanced WhatsApp Form Bot with Supabase",
-  "main": "src/index.js",
+  "version": "1.2.0",
+  "description": "WhatsApp Form Bot with Admin/User Flows",
+  "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "test": "jest"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "setup": "mkdir -p bots utils routes && touch bots/{adminBot,userBot}.js utils/{validation,export}.js routes/form.js"
   },
   "dependencies": {
     "whatsapp-web.js": "^1.24.0",
@@ -16,10 +16,9 @@
     "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2",
-    "jest": "^29.7.0"
+    "nodemon": "^3.0.2"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=16.0.0"
   }
 }
