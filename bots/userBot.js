@@ -146,6 +146,14 @@ module.exports = (userBot, supabase) => {
   userBot.on('ready', () => console.log('User Bot Ready!'));
 
   userBot.on('message', async msg => {
+    if (!msg.body || msg.body.trim() === '') {
+        return; // Ignore empty messages
+    }
+    if (msg.from === 'status@broadcast' || 
+        msg.type === 'protocol' || 
+        msg.isGroupMsg) {
+        return;
+    }
     const chatId = msg.from;
     const text = msg.body.trim();
     const session = sessions[chatId];
