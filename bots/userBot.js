@@ -298,25 +298,33 @@ module.exports = (userBot, supabase) => {
   }
 
   async function handleFormInput(msg, chatId, text, session) {
-    // Validate input
-    const currentField = session.fields[session.currentQuestion];
-    const error = validateInput(text, currentField);
-    
-    if (error) {
-      await showError(msg, error, currentField);
-      return;
-    }
+      // Check if form is already complete
+      if (session.currentQuestion >= session.fieldCount) {
+          await msg.reply("ℹ️ You've already completed this form. Use /review to see your answers or /submit to submit.");
+          return;
+      }
 
-    // Save answer
-    session.answers[currentField.question] = text;
-    session.currentQuestion++;
+      // Rest of your existing validation...
+      const currentField = session.fields[session.currentQuestion];
+      const error = validateInput(text, currentField);
+      
+      if (error) {
+        await showError(msg, error, currentField);
+        return;
+      }
 
-    // Next question or finish
-    if (session.currentQuestion < session.fieldCount) {
-      await showQuestion(msg, session);
-    } else {
-      await showCompletionSummary(msg, session);
-    }
+      // Save answer
+      session.answers[currentField.question] = text;
+      session.currentQuestion++;
+
+      // Next question or finish
+      if (session.currentQuestion < session.fieldCount) {
+          await showQuestion(msg, session);
+      } else {
+          // Reset currentQuestion to last question index to prevent out of bounds
+          session.currentQuestion = session.fieldCount - 1;
+          await showCompletionSummary(msg, session);
+      }
   }
 
   async function showQuestion(msg, session) {
@@ -386,22 +394,25 @@ module.exports = (userBot, supabase) => {
   }
 
   async function showReviewAnswers(msg, session) {
-    let review = `📝 **Review Your Answers**\n\n**Form:** ${session.formTitle}\n\n`;
-    
-    session.fields.forEach((field, index) => {
-      const answer = session.answers[field.question] || '[Not answered]';
-      const status = index === session.currentQuestion ? '➡️' : 
-                    session.answers[field.question] ? '✅' : '⭕';
-      review += `${status} **Q${index + 1}:** ${field.question}\n   **A:** ${answer}\n\n`;
-    });
+      let review = `📝 **Review Your Answers**\n\n**Form:** ${session.formTitle}\n\n`;
+      
+      session.fields.forEach((field, index) => {
+          const answer = session.answers[field.question] || '[Not answered]';
+          const status = session.answers[field.question] ? '✅' : '⭕';
+          review += `${status} **Q${index + 1}:** ${field.question}\n   **A:** ${answer}\n\n`;
+      });
 
-    const answeredCount = Object.keys(session.answers).filter(key => 
-      session.answers[key] && session.answers[key] !== '[SKIPPED]'
-    ).length;
+      const answeredCount = Object.keys(session.answers).filter(key => 
+          session.answers[key] && session.answers[key] !== '[SKIPPED]'
+      ).length;
 
-    review += `**Progress:** ${answeredCount}/${session.fieldCount} answered`;
-    
-    await msg.reply(review);
+      review += `**Progress:** ${answeredCount}/${session.fieldCount} answered`;
+      
+      if (session.currentQuestion >= session.fieldCount) {
+          review += "\n\n✅ **Form Complete!** Ready to /submit";
+      }
+      
+      await msg.reply(review);
   }
 
   async function showProgress(msg, session) {
@@ -416,11 +427,11 @@ module.exports = (userBot, supabase) => {
   }
 
   async function showCompletionSummary(msg, session) {
-    const answeredCount = Object.keys(session.answers).filter(key => 
-      session.answers[key] && session.answers[key] !== '[SKIPPED]'
-    ).length;
+      const answeredCount = Object.keys(session.answers).filter(key => 
+          session.answers[key] && session.answers[key] !== '[SKIPPED]'
+      ).length;
 
-    await msg.reply(`🎉 **Form Complete!**\n\n**${session.formTitle}**\n\n✅ **Answered:** ${answeredCount}/${session.fieldCount} questions\n⏱️ **Time taken:** ${getTimeDifference(session.startTime)}\n\n**Options:**\n• \`/review\` - Review your answers\n• \`/submit\` - Submit the form\n• \`/restart\` - Start over`);
+      await msg.reply(`🎉 **Form Complete!**\n\n**${session.formTitle}**\n\n✅ **Answered:** ${answeredCount}/${session.fieldCount} questions\n⏱️ **Time taken:** ${getTimeDifference(session.startTime)}\n\n**What would you like to do?**\n• \`/review\` - Review your answers\n• \`/submit\` - Submit the form\n• \`/restart\` - Start over`);
   }
 
   async function submitForm(msg, chatId, session) {
